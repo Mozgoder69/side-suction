@@ -1,0 +1,17 @@
+[run]
+branch = True
+source = .
+omit =
+    */tests/*
+    */__init__.py
+    */__pycache__/*
+    */.pytest_cache/*
+    */pyscript*
+    */shibokensupport/*
+    */signature_bootstrap.py
+
+[report]
+show_missing = True
+exclude_lines =
+    pragma: no cover
+    if __name__ == "__main__":

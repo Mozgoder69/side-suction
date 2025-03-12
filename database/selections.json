@@ -1,0 +1,251 @@
+{
+    "C:\\Users\\olze0521\\proj_py\\.0_docs_and_diff_apps\\.side_suction": {
+        "project_path": "C:\\Users\\olze0521\\proj_py\\.0_docs_and_diff_apps\\.side_suction",
+        "directories": [
+            "tests"
+        ],
+        "extensions": [
+            ".py",
+            ".qss"
+        ],
+        "files": [
+            "config\\styles.qss",
+            "config\\icons.py",
+            "config\\colors.py",
+            "config\\settings.py",
+            "logic\\progress_manager.py",
+            "logic\\browser_manager.py",
+            "logic\\selection_manager.py",
+            "logic\\content_manager.py",
+            "ui\\syntax_parser.py",
+            "ui\\content_editor.py",
+            "ui\\ui_builder.py",
+            "ui\\ui_handler.py",
+            "main.py"
+        ]
+    },
+    "C:\\Users\\olze0521\\proj_py\\.0_docs_and_diff_apps\\.tauri_suction": {
+        "project_path": "C:\\Users\\olze0521\\proj_py\\.0_docs_and_diff_apps\\.tauri_suction",
+        "directories": [
+            "node_modules",
+            "src-tauri\\capabilities",
+            "src-tauri\\target",
+            "src-tauri\\gen\\schemas"
+        ],
+        "extensions": [
+            ".toml",
+            ".json",
+            ".rs",
+            ".js",
+            ".html",
+            ".ts",
+            ".vue"
+        ],
+        "files": [
+            "package.json",
+            "vite.config.js",
+            "index.html",
+            "src\\main.js",
+            "src\\App.vue",
+            "src\\plugins\\vuetify.js",
+            "src\\plugins\\colorUtils.js",
+            "src\\plugins\\errorHandler.js",
+            "src\\router\\index.js",
+            "src\\ui\\organisms\\NavBar.vue",
+            "src\\ui\\pages\\HomePage.vue",
+            "src-tauri\\tauri.conf.json",
+            "src-tauri\\Cargo.toml",
+            "src-tauri\\build.rs",
+            "src-tauri\\src\\file_handler.rs",
+            "src-tauri\\src\\commands.rs",
+            "src-tauri\\src\\lib.rs",
+            "src-tauri\\src\\main.rs"
+        ]
+    },
+    "C:\\Users\\olze0521\\proj_py\\fastapi_simpleui": {
+        "project_path": "C:\\Users\\olze0521\\proj_py\\fastapi_simpleui",
+        "directories": [
+            ".git",
+            "frontend\\src\\node_modules",
+            "frontend\\node_modules",
+            "backend\\.pytest_cache",
+            "backend\\logs"
+        ],
+        "extensions": [
+            ".markdown",
+            ".md",
+            ".ini",
+            ".toml",
+            ".py",
+            ".js",
+            ".ts",
+            ".vue",
+            ".json"
+        ],
+        "files": []
+    },
+    "C:\\Users\\olze0521\\proj_py\\fastapi_simpleui\\backend": {
+        "project_path": "C:\\Users\\olze0521\\proj_py\\fastapi_simpleui\\backend",
+        "directories": [
+            "__pycache__",
+            "routes\\bss_ops",
+            "tests",
+            ".pytest_cache"
+        ],
+        "extensions": [
+            ".py"
+        ],
+        "files": [
+            "config\\settings.py",
+            "database\\connection.py",
+            "database\\execution.py",
+            "auth\\jwt_handler.py",
+            "auth\\otp_handler.py",
+            "routes\\auth_router.py",
+            "database\\functions_meta.py",
+            "routes\\meta_router.py",
+            "metadata\\mapping.py",
+            "metadata\\schema.py",
+            "metadata\\views.py",
+            "database\\query_builder.py",
+            "database\\functions_crud.py",
+            "routes\\crud_router.py",
+            "routes\\spa_router.py",
+            "handlers\\errors.py",
+            "setup\\routers.py",
+            "setup\\openapi.py",
+            "main.py"
+        ]
+    },
+    "C:\\Users\\olze0521\\proj_py\\fastapi_simpleui\\frontend": {
+        "project_path": "C:\\Users\\olze0521\\proj_py\\fastapi_simpleui\\frontend",
+        "directories": [
+            "dist",
+            "src\\node_modules",
+            "node_modules",
+            "src\\ui\\pages\\bss_ops"
+        ],
+        "extensions": [
+            ".ts",
+            ".vue"
+        ],
+        "files": [
+            "vite.config.ts",
+            "src\\main.ts",
+            "src\\App.vue",
+            "src\\router\\index.ts",
+            "src\\router\\guards.ts",
+            "src\\core\\plugins\\errorHandler.ts",
+            "src\\core\\plugins\\vuetify.ts",
+            "src\\core\\utils\\actionUtils.ts",
+            "src\\core\\utils\\fieldFactory.ts",
+            "src\\core\\utils\\formUtils.ts",
+            "src\\core\\types\\Field.ts",
+            "src\\core\\services\\api\\client.ts",
+            "src\\core\\services\\api\\index.ts",
+            "src\\core\\services\\auth.ts",
+            "src\\core\\services\\cache.ts",
+            "src\\stores\\authStore.ts",
+            "src\\stores\\crudStore.ts",
+            "src\\stores\\schemaStore.ts",
+            "src\\stores\\toastStore.ts",
+            "src\\core\\composables\\useCrud.ts",
+            "src\\core\\composables\\useDialog.ts",
+            "src\\core\\composables\\useErrorHandler.ts",
+            "src\\core\\composables\\useValidation.ts",
+            "src\\core\\composables\\useViewLoader.ts",
+            "src\\ui\\atoms\\TextBool.vue",
+            "src\\ui\\atoms\\FKSelect.vue",
+            "src\\ui\\atoms\\PKSelect.vue",
+            "src\\ui\\molecules\\LoadingAndError.vue",
+            "src\\ui\\molecules\\DynamicField.vue",
+            "src\\ui\\molecules\\NestedFields.vue",
+            "src\\ui\\cells\\TableSelector.vue",
+            "src\\ui\\cells\\ViewSelector.vue",
+            "src\\ui\\cells\\DataDisplay.vue",
+            "src\\ui\\organisms\\BulkCrudDialog.vue",
+            "src\\ui\\organisms\\CrudDialog.vue",
+            "src\\ui\\organisms\\CrudPanel.vue",
+            "src\\ui\\organisms\\Footer.vue",
+            "src\\ui\\organisms\\Form.vue",
+            "src\\ui\\organisms\\NavBar.vue",
+            "src\\ui\\organisms\\Toast.vue",
+            "src\\ui\\templates\\FramesBox.vue",
+            "src\\ui\\templates\\SimpleView.vue",
+            "src\\ui\\templates\\SimpleCardView.vue",
+            "src\\ui\\templates\\SimpleFormView.vue",
+            "src\\ui\\templates\\SimpleTableView.vue",
+            "src\\ui\\templates\\WizardView.vue",
+            "src\\ui\\pages\\HomePage.vue",
+            "src\\ui\\pages\\LoginPage.vue",
+            "src\\core\\auth\\useAuthInterceptors.ts",
+            "src\\core\\auth\\useAuthStore.ts",
+            "src\\core\\hooks\\useErrorHandler.ts"
+        ]
+    },
+    "C:\\Users\\olze0521\\proj_py\\fastapi_simpleui\\frontend\\src": {
+        "project_path": "C:\\Users\\olze0521\\proj_py\\fastapi_simpleui\\frontend\\src",
+        "directories": [
+            "ui\\pages\\bss_ops",
+            "node_modules"
+        ],
+        "extensions": [
+            ".vue",
+            ".ts"
+        ],
+        "files": [
+            "main.ts",
+            "App.vue",
+            "core\\services\\client.ts",
+            "core\\services\\api.ts",
+            "core\\auth\\authUtils.ts",
+            "core\\auth\\useAuthInterceptors.ts",
+            "core\\auth\\useAuthStore.ts",
+            "core\\types\\data.ts",
+            "core\\types\\schema.ts",
+            "core\\types\\ui.ts",
+            "core\\types\\index.ts",
+            "core\\utils\\fieldMapping.ts",
+            "core\\utils\\schemaUtils.ts",
+            "core\\hooks\\useErrorHandler.ts",
+            "core\\hooks\\data\\useSchemas.ts",
+            "core\\hooks\\data\\useGrid.ts",
+            "core\\hooks\\data\\useForm.ts",
+            "core\\hooks\\ui\\useKeyFields.ts",
+            "core\\hooks\\ui\\useSelectionStore.ts",
+            "core\\hooks\\ui\\useValidation.ts",
+            "core\\hooks\\ui\\useViewLoader.ts",
+            "global\\plugins\\errorHandler.ts",
+            "global\\plugins\\vuetify.ts",
+            "global\\routers\\index.ts",
+            "global\\routers\\guards.ts",
+            "ui\\atoms\\LoadingAndError.vue",
+            "ui\\atoms\\ViewJSONButton.vue",
+            "ui\\atoms\\TextBool.vue",
+            "ui\\atoms\\KeySelect.vue",
+            "ui\\atoms\\FKSelect.vue",
+            "ui\\atoms\\PKSelect.vue",
+            "ui\\molecules\\CompositePKSelect.vue",
+            "ui\\molecules\\DynamicField.vue",
+            "ui\\molecules\\TableSelector.vue",
+            "ui\\molecules\\ViewSelector.vue",
+            "ui\\molecules\\DataDisplay.vue",
+            "ui\\molecules\\EditableCell.vue",
+            "ui\\organisms\\GridCrud.vue",
+            "ui\\organisms\\GridData.vue",
+            "ui\\organisms\\FormMode.vue",
+            "ui\\organisms\\FormData.vue",
+            "ui\\organisms\\OneObjActionDialog.vue",
+            "ui\\organisms\\ManyObjActionDialog.vue",
+            "ui\\organisms\\NavBar.vue",
+            "ui\\templates\\FramesBox.vue",
+            "ui\\templates\\TableView.vue",
+            "ui\\templates\\CardView.vue",
+            "ui\\templates\\FormView.vue",
+            "ui\\templates\\WizardView.vue",
+            "ui\\pages\\LoginPage.vue",
+            "ui\\pages\\OTPPage.vue",
+            "ui\\pages\\APITestPage.vue"
+        ]
+    }
+}

@@ -1,0 +1,45 @@
+QWidget, QLabel {
+    background-color: #182028;
+    color: #def;
+}
+
+QLineEdit, QComboBox, QAbstractButton {
+    background-color: #345;
+}
+
+QAbstractItemView, QAbstractItemView::item {
+    background-color: #234;
+}
+
+QLineEdit, QComboBox, QAbstractButton, QAbstractItemView::item {
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #9cf;
+    padding: 2px;
+}
+
+QLineEdit:hover, QComboBox:hover, QAbstractButton:hover, QAbstractItemView::item:hover, QAbstractItemView::item:selected {
+    border-color: #68a;
+    color: #def;
+}
+
+QScrollBar {
+    background-color: #234;
+    border: none;
+    padding: 2px;
+    width: 14px;
+    height: 14px;
+}
+
+QScrollBar::handle {
+    background-color: #68a;
+    border-radius: 4px;
+    min-width: 14px;
+    min-height: 14px;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line, QScrollBar::add-page, QScrollBar::sub-page {
+    background-color: transparent;
+    width: 0px;
+    height: 0px;
+}
