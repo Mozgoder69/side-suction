@@ -21,7 +21,7 @@ PANEL_SIZE = FONT_SIZE << 1
 
 # Utility functions
 @contextmanager
-def painterContext(widget: QWidget) -> QPainter:
+def painterContext(widget):
     painter = QPainter(widget)
     try:
         yield painter
@@ -169,7 +169,8 @@ class ContentEditor(QPlainTextEdit):
             self.lineNumberWidth() + PANEL_SIZE, PANEL_SIZE, 0, PANEL_SIZE
         )
 
-    def updateAreas(self, rect: QRect, dy: int) -> None:
+    @asyncSlot(QRect, int)
+    async def updateAreas(self, rect: QRect, dy: int) -> None:
         """Обновляет области UI при прокрутке или изменении размеров."""
         if dy:
             self.lineNumberArea.scroll(0, dy)

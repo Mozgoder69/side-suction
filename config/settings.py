@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     defaultFontName: str = "FantasqueSansM Nerd Font Mono"
     databasePath: Path = Path(__file__).parent.parent / "database\\selections.json"
     stylesheetPath: Path = Path(__file__).parent / "styles.qss"
-    maxFileSize: int = 2 << 2 << 2
+    maxFileSize: int = 33554433  # (2 << (3 << 3)) + 1 | (1 << 25) + 1 | 2**25 + 1 |
 
 
 # Initialize settings

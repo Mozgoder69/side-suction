@@ -4,6 +4,7 @@ import json
 
 import aiofiles
 from config.settings import settings
+from utils.report import report_result
 
 
 class SelectionManager:
@@ -12,7 +13,7 @@ class SelectionManager:
             async with aiofiles.open(settings.databasePath, "r", encoding="utf-8") as f:
                 return json.loads(await f.read())
         except Exception as e:
-            print(f"No selection loaded: {e}")
+            report_result(f"No selection loaded: {e}", "Load Error", 0)
             return {}
 
     async def _save_db(self, data):
@@ -21,7 +22,7 @@ class SelectionManager:
                 await f.write(json.dumps(data, ensure_ascii=False, indent=4))
             return True
         except Exception as e:
-            print(f"No selection saved: {e}")
+            report_result(f"No selection saved: {e}", "Save Error", 0)
             return False
 
     async def saveSelection(self, project_path, selections):

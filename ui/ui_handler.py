@@ -8,14 +8,9 @@ from config.settings import settings
 from logic.progress_manager import progress
 from PySide6.QtCore import QSignalBlocker, Qt
 from PySide6.QtGui import QColor, QTextCursor
-from PySide6.QtWidgets import (
-    QApplication,
-    QFileDialog,
-    QListWidgetItem,
-    QMessageBox,
-    QTextEdit,
-)
+from PySide6.QtWidgets import QApplication, QFileDialog, QListWidgetItem, QTextEdit
 from qasync import asyncSlot
+from utils.report import report_result
 
 
 class UIHandler:
@@ -47,13 +42,12 @@ class UIHandler:
         if not project_path:
             project_path = QFileDialog.getExistingDirectory(self, "Select Directory")
         if not project_path or not self.browser_manager.set_project_path(project_path):
-            QMessageBox.warning(self, "Path Error", "Select or enter a valid path.")
-            self.setHighlightColor(Colors.WARN)
+            report_result("Select or enter a valid path.", "Path Error", 0)
             return
         self.projectPathLineEdit.setText(str(self.browser_manager.projectPath))
         self.resetSelections()
         self.scanProject()
-        self.setHighlightColor(Colors.PASS)
+        report_result()
 
     def onProjectPathEntered(self):
         project_path = self.projectPathLineEdit.text().strip()
@@ -96,14 +90,10 @@ class UIHandler:
     # Методы обновления UI
     @asyncSlot()
     async def scanProject(self):
-        try:
-            data = await self.browser_manager.scan_project()
-            self.projectPathLineEdit.setText(str(self.browser_manager.projectPath))
-            await self.updateUIWithData(data)
-            self.setHighlightColor(Colors.PASS)
-        except Exception as e:
-            QMessageBox.critical(self, "Scan Error", str(e))
-            self.setHighlightColor(Colors.FAIL)
+        data = await self.browser_manager.scan_project()
+        self.projectPathLineEdit.setText(str(self.browser_manager.projectPath))
+        await self.updateUIWithData(data)
+        report_result()
 
     async def updateUIWithData(self, data):
         self.filteredDirs = data["filteredDirs"]
@@ -153,24 +143,20 @@ class UIHandler:
 
     @asyncSlot()
     async def refreshFileList(self):
-        try:
-            fileList = await self.browser_manager.get_filtered_files(
-                self.selectedExts, self.selectedDirs
-            )
-            with QSignalBlocker(self.fileListWidget):
-                self.fileListWidget.clear()
-                async for relPath, fullPath in progress(fileList, "Refreshing Files"):
-                    item = QListWidgetItem(str(relPath))
-                    item.setData(Qt.UserRole + 1, str(relPath))
-                    item.setData(Qt.UserRole + 2, str(fullPath))
-                    self.fileListWidget.addItem(item)
-                    if item.data(Qt.UserRole + 1) in self.selectedFilePaths:
-                        item.setSelected(True)
+        fileList = await self.browser_manager.get_filtered_files(
+            self.selectedExts, self.selectedDirs
+        )
+        with QSignalBlocker(self.fileListWidget):
+            self.fileListWidget.clear()
+            async for relPath, fullPath in progress(fileList, "Refreshing Files"):
+                item = QListWidgetItem(str(relPath))
+                item.setData(Qt.UserRole + 1, str(relPath))
+                item.setData(Qt.UserRole + 2, str(fullPath))
+                self.fileListWidget.addItem(item)
+                if item.data(Qt.UserRole + 1) in self.selectedFilePaths:
+                    item.setSelected(True)
             self.updateLabels()
             self.refreshIndexedFileList()
-        except Exception as e:
-            QMessageBox.critical(self, "Refresh Error", str(e))
-            self.setHighlightColor(Colors.FAIL)
 
     @asyncSlot()
     async def refreshIndexedFileList(self):
@@ -192,82 +178,52 @@ class UIHandler:
     async def saveSelection(self):
         projectPath = str(self.browser_manager.projectPath)
         if not projectPath:
-            QMessageBox.warning(self, "Project Error", "No project path selected")
-            self.setHighlightColor(Colors.WARN)
+            report_result("No project path selected", "Project Error", 0)
             return
-
         selections = {
             "project_path": str(projectPath),
             "directories": list(map(str, self.selectedDirs)),
             "extensions": list(self.selectedExts),
             "files": self.selectedFilePaths,
         }
-
-        try:
-            async for key in progress(selections.keys(), "Saving Selection"):
-                await self.selection_manager.saveSelection(
-                    projectPath, {key: selections[key]}
-                )
-            self.setHighlightColor(Colors.PASS)
-        except Exception as e:
-            QMessageBox.critical(self, "Save Error", str(e))
-            self.setHighlightColor(Colors.FAIL)
+        async for key in progress(selections.keys(), "Saving Selection"):
+            await self.selection_manager.saveSelection(
+                projectPath, {key: selections[key]}
+            )
+        report_result()
 
     @asyncSlot()
     async def loadSelection(self):
         projectPath = str(self.browser_manager.projectPath)
         if not projectPath:
-            QMessageBox.warning(self, "Project Error", "Project path is not selected")
-            self.setHighlightColor(Colors.WARN)
+            report_result("Project path is not selected", "Input Error", 0)
             return
-
-        saved_data = await self.selection_manager.loadSelection(projectPath)
-        if not saved_data:
-            QMessageBox.information(
-                self, "Info", "No saved selections for this project"
-            )
-            self.setHighlightColor(Colors.WARN)
+        savedData = await self.selection_manager.loadSelection(projectPath)
+        if not savedData:
+            report_result("No saved data for the project", "Data Error", 0)
             return
-
-        try:
-            self.resetSelections()
-
-            # Загружаем директории
-            self.selectedDirs = set(map(Path, saved_data.get("directories", [])))
-            await self.refreshDirectoryList()
-            await self.onDirectorySelected(update_files=False)
-
-            # Загружаем расширения
-            self.selectedExts = set(saved_data.get("extensions", []))
-            await self.refreshExtensionList()
-            await self.onExtensionSelected(update_files=False)
-
-            # Загружаем файлы
-            self.selectedFilePaths = saved_data.get("files", [])
-            await self.refreshFileList()
-
-            self.setHighlightColor(Colors.PASS)
-        except Exception as e:
-            QMessageBox.critical(self, "Load Error", str(e))
-            self.setHighlightColor(Colors.FAIL)
+        self.resetSelections()
+        self.selectedDirs = set(map(Path, savedData.get("directories", [])))
+        await self.refreshDirectoryList()
+        await self.onDirectorySelected(update_files=False)
+        self.selectedExts = set(savedData.get("extensions", []))
+        await self.refreshExtensionList()
+        await self.onExtensionSelected(update_files=False)
+        self.selectedFilePaths = savedData.get("files", [])
+        await self.refreshFileList()
+        report_result()
 
     # Извлечение и обработка кода
     @asyncSlot()
     async def extractContent(self):
         files = self.fileListWidget.selectedItems()
         if not files:
-            QMessageBox.warning(self, "File Error", "Select a File")
-            self.setHighlightColor(Colors.WARN)
+            report_result("Select a File", "File Error", 0)
             return
-        try:
-            self.isContentMinified = False
-            # self.contentEditor.clear()
-            content = await self.content_manager.extract_content(files)
-            self.contentEditor.setContent(content)
-            self.setHighlightColor(Colors.PASS)
-        except Exception as e:
-            QMessageBox.critical(self, "Extract Error", str(e))
-            self.setHighlightColor(Colors.FAIL)
+        self.isContentMinified = False
+        content = await self.content_manager.extract_content(files)
+        self.contentEditor.setContent(content)
+        report_result()
 
     def copyContent(self):
         if not self.isContentMinified:
@@ -285,8 +241,7 @@ class UIHandler:
     def searchInCode(self):
         searchTerm = self.searchLineEdit.text()
         if not searchTerm:
-            QMessageBox.warning(self, "Search Error", "Enter a search term")
-            self.setHighlightColor(Colors.WARN)
+            report_result("Enter a valid search term", "Input Error", 0)
             return
         self.contentEditor.setExtraSelections([])
         self.contentEditor.moveCursor(QTextCursor.Start)
@@ -313,7 +268,7 @@ class UIHandler:
             self.contentEditor.ensureCursorVisible()
             self.setHighlightColor(Colors.INFO)
         else:
-            self.setHighlightColor(Colors.WARN)
+            report_result("Nothing found for this search term", "Empty Result", 1)
         self.contentEditor.setExtraSelections(extraSelections)
 
     # Управление выборкой файлов

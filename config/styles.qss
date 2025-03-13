@@ -11,7 +11,7 @@ QAbstractItemView, QAbstractItemView::item {
     background-color: #234;
 }
 
-QLineEdit, QComboBox, QAbstractButton, QAbstractItemView::item {
+QPlainTextEdit, QLineEdit, QComboBox, QAbstractButton, QAbstractItemView::item {
     border: 1px solid transparent;
     border-radius: 4px;
     color: #9cf;

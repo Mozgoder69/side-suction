@@ -7,6 +7,7 @@ import aiofiles
 from config.settings import settings
 from logic.progress_manager import progress
 from PySide6.QtCore import Qt
+from utils.report import report_result
 
 
 class ContentManager:
@@ -15,15 +16,13 @@ class ContentManager:
         async for item in progress(selected_items, "Extracting Content"):
             path = Path(item.data(Qt.UserRole + 2))
             if path.stat().st_size > settings.maxFileSize:
-                print(f"Skipping {path}: too large")
+                report_result(f"File {path} is too large", "File Size Limit", 1)
                 continue
-            try:
-                async with aiofiles.open(
-                    path, "r", encoding="utf-8", errors="replace"
-                ) as f:
-                    content.append(f"```{path.name}\n{await f.read()}\n```")
-            except Exception as e:
-                print(f"Error reading {path}: {e}")
+
+            async with aiofiles.open(
+                path, "r", encoding="utf-8", errors="replace"
+            ) as f:
+                content.append(f"```{path.name}\n{await f.read()}\n```")
         return "\n".join(content)
 
     def minify_web_tags(self, code: str) -> str:

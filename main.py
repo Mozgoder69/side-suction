@@ -1,4 +1,5 @@
 # .side_suction/main.py
+
 import asyncio
 import sys
 
@@ -10,6 +11,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 from qasync import QEventLoop
 from ui.ui_builder import UIBuilder
 from ui.ui_handler import UIHandler
+from utils.report import report_config, report_result
 
 
 class SideSuction(QWidget, UIBuilder, UIHandler):
@@ -62,9 +64,7 @@ class SideSuction(QWidget, UIBuilder, UIHandler):
         self.setMaximumWidth(maxWidth)
 
     def setHighlightColor(self, color):
-        self.contentEditor.setStyleSheet(
-            f"border: 1px solid {color.value}; border-radius: 4px"
-        )
+        self.contentEditor.setStyleSheet(f"border-color: {color.value};")
 
 
 if __name__ == "__main__":
@@ -72,6 +72,11 @@ if __name__ == "__main__":
     loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
     window = SideSuction()
+    report_config.parent = window
+    report_config.callback = window.setHighlightColor
     window.show()
-    with loop:
-        loop.run_forever()
+    try:
+        with loop:
+            loop.run_forever()
+    except Exception as e:
+        report_result(str(e), str(e.__class__.__name__), 0)

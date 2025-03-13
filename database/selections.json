@@ -21,6 +21,8 @@
             "ui\\content_editor.py",
             "ui\\ui_builder.py",
             "ui\\ui_handler.py",
+            "utils\\config.py",
+            "utils\\logs.py",
             "main.py"
         ]
     },

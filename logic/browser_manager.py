@@ -54,21 +54,6 @@ class BrowserManager:
                 filtered_dirs.add(d)
         return filtered_dirs
 
-    # async def get_filtered_dirs(self, selectedDirs):
-    #     if not hasattr(self, '_dir_tree'):
-    #         self._dir_tree = {d: set(d.parents) for d in self.filteredDirs}
-    #     return {
-    #         d for d in self.filteredDirs
-    #         if not any(d in self._dir_tree[s] for s in selectedDirs if d != s)
-    #     }
-
-    # def get_filtered_dirs(self, selectedDirs):
-    #     return {
-    #         d
-    #         for d in self.filteredDirs
-    #         if not any(d.is_relative_to(s) for s in selectedDirs if d != s)
-    #     }
-
     def get_filtered_exts(self):
         return {f.suffix for _, f in self.filteredFiles}
 

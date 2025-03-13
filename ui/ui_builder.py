@@ -154,12 +154,6 @@ class UIBuilder(BrowserPanel, ContentPanel):
             projectCompleter.setCaseSensitivity(Qt.CaseInsensitive)
             projectCompleter.setFilterMode(Qt.MatchContains)
             projectCompleter.setCompletionMode(QCompleter.PopupCompletion)
-            # projectCompleter.popup().setStyleSheet("""
-            #     QAbstractItemView, QAbstractItemView::item
-            # { background-color: #345; border: 1px solid transparent; border-radius: 4px; color: #9cf; padding: 2px; }
-            #     QAbstractItemView::item:hover, QAbstractItemView::item:selected
-            # { border-color: #68a; color: #def; }
-            #     """)
             model = projectCompleter.popup().model()
             if model.rowCount() > 0:
                 index = model.index(0, 0)
@@ -172,6 +166,5 @@ class UIBuilder(BrowserPanel, ContentPanel):
         with open(path_to_stylesheet, "r") as file:
             styles = file.read()
             self.setStyleSheet(styles)
-            # self.projectCompleter.setStyleSheet(styles)
             self.projectPathLineEdit.completer().popup().setStyleSheet(styles)
             self.contentEditor.verticalScrollBar().setStyleSheet(styles)
