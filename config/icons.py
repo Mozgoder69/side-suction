@@ -1,5 +1,6 @@
 # .side_suction/config/icons.py
 
+CNFG = "⚙"
 FIND = "🔍"
 SAVE = "💾"
 LOAD = "📂"
@@ -9,3 +10,4 @@ CHKT = "🞕"
 CHKF = "☐"
 FLDT = "⯆"
 FLDF = "⯈"
+

@@ -216,12 +216,14 @@ class UIHandler:
     # Извлечение и обработка кода
     @asyncSlot()
     async def extractContent(self):
-        files = self.fileListWidget.selectedItems()
-        if not files:
+        if not self.selectedFilePaths:
             report_result("Select a File", "File Error", 0)
             return
         self.isContentMinified = False
-        content = await self.content_manager.extract_content(files)
+        project_path = self.projectPathLineEdit.text().strip()
+        content = await self.content_manager.extract_content(
+            project_path, self.selectedFilePaths
+        )
         self.contentEditor.setContent(content)
         report_result()
 

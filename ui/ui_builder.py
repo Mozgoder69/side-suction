@@ -2,9 +2,10 @@
 
 import json
 
-from config.icons import CHKT, COPY, FIND, LOAD, READ, SAVE
+from config.icons import CHKT, CNFG, COPY, FIND, LOAD, READ, SAVE
 from config.settings import settings
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QRect, Qt
+from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QComboBox,
     QCompleter,
@@ -16,12 +17,64 @@ from PySide6.QtWidgets import (
     QPushButton,
     QSizePolicy,
     QSplitter,
+    QStyle,
+    QStyleOptionProgressBar,
     QVBoxLayout,
     QWidget,
 )
 from ui.content_editor import ContentEditor
 
 LABEL_HEIGHT = 26
+
+
+class CustomProgressBar(QProgressBar):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        opt = QStyleOptionProgressBar()
+        self.initStyleOption(opt)
+
+        # Отрисовываем фон через стандартный стиль
+        style = self.style()
+        style.drawPrimitive(QStyle.PE_Widget, opt, painter, self)
+
+        # Получаем текст и его размеры
+        text = self.text() or ""  # Если текста нет, используем пустую строку
+        font_metrics = painter.fontMetrics()
+        text_rect = font_metrics.boundingRect(text)
+        text_width = text_rect.width()
+
+        # Вычисляем координаты для текста (слева)
+        padding = 80  # 80 + ширина текста слева ~= встроенный отступ справа никуда не делся + ширина кнопки настроек. в итоге полоса примерно посередине экрана в большинстве случаев
+        text_x = 0
+        text_y = (self.height() + font_metrics.ascent() - font_metrics.descent()) // 2
+
+        # Отрисовываем текст
+        painter.setPen(Qt.white)
+        painter.drawText(text_x, text_y, text)
+
+        # Вычисляем область для полосы прогресса (справа)
+        available_width = self.width() - text_width - padding
+        progress_x = text_width + padding
+
+        # Корректируем размеры полосы прогресса в зависимости от значения
+        value = self.value()
+        minimum = self.minimum()
+        maximum = self.maximum()
+        if maximum > minimum:
+            progress_width = int(
+                (value - minimum) / (maximum - minimum) * available_width
+            )
+        else:
+            progress_width = 0
+
+        # Устанавливаем область для полосы прогресса
+        opt.rect = QRect(progress_x, 0, progress_width, self.height())
+
+        # Отрисовываем полосу прогресса через стандартный стиль
+        style.drawControl(QStyle.CE_ProgressBarContents, opt, painter, self)
 
 
 class BrowserPanel:
@@ -130,16 +183,20 @@ class UIBuilder(BrowserPanel, ContentPanel):
     def init_ui_builder(self):
         self.saved_projects = []
         self.mainLayout = QVBoxLayout(self)
-        self.progressBar = QProgressBar()
+        self.topLayout = QHBoxLayout()
+        self.progressBar = CustomProgressBar()
+        self.progressBar.setFormat("Operation Progress")
         self.progressBar.setValue(0)
-        self.progressBar.setTextVisible(True)
+        self.settingsMenu = QPushButton(f"{CNFG} Settings ")
         self.panelsSplitter = QSplitter(Qt.Horizontal)
         self.init_browser_panel()
         self.setProjectsAutoComplete()
         self.init_content_panel()
         self.panelsSplitter.addWidget(self.browserPanel)
         self.panelsSplitter.addWidget(self.contentPanel)
-        self.mainLayout.addWidget(self.progressBar)
+        self.topLayout.addWidget(self.progressBar, 1)
+        self.topLayout.addWidget(self.settingsMenu)
+        self.mainLayout.addLayout(self.topLayout)
         self.mainLayout.addWidget(self.panelsSplitter)
         self.applyStylesheet()
 
