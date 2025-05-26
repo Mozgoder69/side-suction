@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterator, Optional, Tuple
 
 from config.icons import FLDF, FLDT
 from config.settings import settings
-from logic.progress_manager import progress
+from logic.status_manager import progress
 from PySide6.QtCore import QPoint, QRect, QSize, Qt
 from PySide6.QtGui import QColor, QCursor, QFont, QPainter, QTextCharFormat, QTextOption
 from PySide6.QtWidgets import QPlainTextEdit, QTextEdit, QWidget

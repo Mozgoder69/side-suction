@@ -5,12 +5,13 @@ from pathlib import Path
 from config.colors import Colors
 from config.icons import CHKF, CHKT
 from config.settings import settings
-from logic.progress_manager import progress
+from logic.project_manager import ProjectManager
+from logic.project_source import GitHubSource, LocalSource
+from logic.status_manager import progress, report_result
 from PySide6.QtCore import QSignalBlocker, Qt
 from PySide6.QtGui import QColor, QTextCursor
 from PySide6.QtWidgets import QApplication, QFileDialog, QListWidgetItem, QTextEdit
 from qasync import asyncSlot
-from utils.report import report_result
 
 
 class UIHandler:
@@ -25,8 +26,8 @@ class UIHandler:
         self.fileListWidget.selectionModel().selectionChanged.connect(
             self.onFileSelected
         )
-        self.projectPathLineEdit.returnPressed.connect(self.onProjectPathEntered)
-        self.projectSearchButton.clicked.connect(self.onProjectPathSelected)
+        self.projectPathLineEdit.returnPressed.connect(self.onSourceInput)
+        self.projectSearchButton.clicked.connect(self.onSourceDialog)
         self.saveSelectionButton.clicked.connect(self.saveSelection)
         self.loadSelectionButton.clicked.connect(self.loadSelection)
         self.extractContentButton.clicked.connect(self.extractContent)
@@ -38,30 +39,81 @@ class UIHandler:
         self.fontNameComboBox.activated.connect(self.updateFontName)
         self.fontSizeComboBox.currentIndexChanged.connect(self.updateFontSize)
 
-    def setProjectPathAndScan(self, project_path: str = None):
-        if not project_path:
-            project_path = QFileDialog.getExistingDirectory(self, "Select Directory")
-        if not project_path or not self.browser_manager.set_project_path(project_path):
-            report_result("Select or enter a valid path.", "Path Error", 0)
-            return
-        self.projectPathLineEdit.setText(str(self.browser_manager.projectPath))
+    def _parse_source_spec(self, spec: str):
+        # 1) Локальная папка
+        if Path(spec).is_dir():
+            return LocalSource(spec)
+
+        # 2) owner/repo[#branch]
+        if "/" in spec and not spec.startswith("http"):
+            owner_repo, _, branch = spec.partition("#")
+            owner, _, repo = owner_repo.partition("/")
+            return GitHubSource(owner, repo, branch or "main")
+
+        # 3) GitHub API URL
+        if spec.startswith("https://api.github.com/"):
+            # Предполагаем, что есть конструктор from_tree_url
+            return GitHubSource.from_tree_url(spec)
+
+        return None
+
+    @asyncSlot()
+    async def _init_and_scan(self, source):
+        # если до этого был GitHubSource — закрываем его сессию
+        old = getattr(self, "projectSrc", None)
+        if old and hasattr(old, "close"):
+            try:
+                await old.close()
+            except Exception:
+                pass
+
+        self.projectSrc = source
+        self.projectPath = str(source)
+        self.project_manager = ProjectManager(source)
+
+        # Сбрасываем UI
         self.resetSelections()
-        self.scanProject()
-        report_result()
+        self.projectPathLineEdit.setText(str(source))
 
-    def onProjectPathEntered(self):
-        project_path = self.projectPathLineEdit.text().strip()
-        self.setProjectPathAndScan(project_path)
+        # Запускаем сканирование и обновляем UI
+        try:
+            data = await self.project_manager.scan_project()
+        except Exception as e:
+            # сообщаем об ошибке, но не падаем
+            from logic.status_manager import report_result, Levels
 
-    def onProjectPathSelected(self):
-        self.setProjectPathAndScan()
+            report_result(str(e), "Scan Error", Levels.FAIL)
+            return
+        await self.updateUIWithData(data)
+
+    @asyncSlot()
+    async def onSourceDialog(self):
+        """Выбрать папку через диалог — потом сразу scan."""
+        if path := QFileDialog.getExistingDirectory(self, "Select Directory"):
+            await self._init_and_scan(LocalSource(path))
+
+    @asyncSlot()
+    async def onSourceInput(self):
+        """Ввод текста — анализируем, что это: локальный путь, owner/repo или URL."""
+        spec = self.projectPathLineEdit.text().strip()
+        if not spec:
+            report_result("Введите путь к папке или owner/repo[#branch]", "Input Error")
+            return
+
+        source = self._parse_source_spec(spec)
+        if source:
+            await self._init_and_scan(source)
+        else:
+            report_result(
+                "Невалидный формат: папка или owner/repo[#branch]", "Input Error"
+            )
 
     @asyncSlot()
     async def onDirectorySelected(self, update_files=True):
         self.selectedDirs = {
             Path(item.text()) for item in self.dirListWidget.selectedItems()
         }
-        self.filteredDirs = await self.browser_manager.get_filtered_dirs(
+        self.filteredDirs = await self.project_manager.get_filtered_dirs(
             self.selectedDirs
         )
         await self.refreshDirectoryList()
@@ -90,8 +142,8 @@ class UIHandler:
     # Методы обновления UI
     @asyncSlot()
     async def scanProject(self):
-        data = await self.browser_manager.scan_project()
-        self.projectPathLineEdit.setText(str(self.browser_manager.projectPath))
+        data = await self.project_manager.scan_project()
+        self.projectPathLineEdit.setText(self.projectPath)
         await self.updateUIWithData(data)
         report_result()
 
@@ -143,7 +195,7 @@ class UIHandler:
 
     @asyncSlot()
     async def refreshFileList(self):
-        fileList = await self.browser_manager.get_filtered_files(
+        fileList = await self.project_manager.get_filtered_files(
             self.selectedExts, self.selectedDirs
         )
         with QSignalBlocker(self.fileListWidget):
@@ -176,31 +228,29 @@ class UIHandler:
 
     @asyncSlot()
     async def saveSelection(self):
-        projectPath = str(self.browser_manager.projectPath)
-        if not projectPath:
+        if not self.projectSrc:
             report_result("No project path selected", "Project Error", 0)
             return
         selections = {
-            "project_path": str(projectPath),
+            "project_path": str(self.projectSrc),
             "directories": list(map(str, self.selectedDirs)),
             "extensions": list(self.selectedExts),
             "files": self.selectedFilePaths,
         }
         async for key in progress(selections.keys(), "Saving Selection"):
             await self.selection_manager.saveSelection(
-                projectPath, {key: selections[key]}
+                self.projectPath, {key: selections[key]}
             )
         report_result()
 
     @asyncSlot()
     async def loadSelection(self):
-        projectPath = str(self.browser_manager.projectPath)
-        if not projectPath:
-            report_result("Project path is not selected", "Input Error", 0)
+        if not self.projectSrc:
+            report_result("Project path is not selected", "Input Error")
             return
-        savedData = await self.selection_manager.loadSelection(projectPath)
+        savedData = await self.selection_manager.loadSelection(self.projectPath)
         if not savedData:
-            report_result("No saved data for the project", "Data Error", 0)
+            report_result("No saved data for the project", "Data Error")
             return
         self.resetSelections()
         self.selectedDirs = set(map(Path, savedData.get("directories", [])))
@@ -213,24 +263,25 @@ class UIHandler:
         await self.refreshFileList()
         report_result()
 
-    # Извлечение и обработка кода
     @asyncSlot()
     async def extractContent(self):
         if not self.selectedFilePaths:
-            report_result("Select a File", "File Error", 0)
+            report_result("Select a File", "File Error")
             return
         self.isContentMinified = False
-        project_path = self.projectPathLineEdit.text().strip()
-        content = await self.content_manager.extract_content(
-            project_path, self.selectedFilePaths
-        )
+        # Подбираем из self.project_manager.filteredFiles только те rel, которые юзер выбрал
+        items: list[tuple[Path, str]] = []
+        for rel, ref in self.project_manager.filteredFiles:
+            if str(rel) in self.selectedFilePaths:
+                items.append((rel, ref))
+        content = await self.project_manager.extract_content(items)
         self.contentEditor.setContent(content)
         report_result()
 
     def copyContent(self):
         if not self.isContentMinified:
             self.isContentMinified = True
-            content = self.content_manager.minify_content(
+            content = self.project_manager.minify_content(
                 self.contentEditor.toPlainText()
             )
             self.contentEditor.setContent(content)

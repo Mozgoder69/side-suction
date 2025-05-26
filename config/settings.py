@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     stylesheetPath: Path = Path(__file__).parent / "styles.qss"
     maxFileSize: int = 33554433  # (2 << (3 << 3)) + 1 | (1 << 25) + 1 | 2**25 + 1 |
 
+    github_token: str | None = None
+
 
 # Initialize settings
 settings = Settings()

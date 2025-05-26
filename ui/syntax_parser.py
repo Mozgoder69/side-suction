@@ -45,13 +45,13 @@ class SyntaxParser(QSyntaxHighlighter):
     def definePatterns(self):
         self.separatorPatterns = [r"[,;(){}\[\]:]"]
         self.operatorPatterns = [
-            r"(?i)[+\-*/%<>&^|~!]=?|<<|>>|==|!=|===|!==|[+\-*/%&|^]=?|<<=?|>>=?|&&|\|\||\?\??|:|\.{1,3}|"
+            r"(?i)[+\-*/%<>&^|~!]=?|<<|>>|===|!==|==|!=|[+\-*/%&|^]=?|<<=?|>>=?|&&|\|\||\?\??|:|\.{1,3}|"
         ]
         self.sectionPatterns = [
-            r"<[a-zA-Z][a-zA-Z0-9]*\b[^>]*>|<\/[a-zA-Z][a-zA-Z0-9]*>|\[[^\]]+\]|![a-zA-Z0-9\-]+|(?i)(?:@|#\s*(pragma|define|include|if|endif|else)|#\[.*?\]|\.\w+|\b[a-zA-Z0-9_]+:)|(?:\{\%|\{\{|--\[)"
+            r"<(/?[A-Za-z][\w\-]*)([^>]*?)(/?)>|\[[^\]]+\]|![a-zA-Z0-9\-]+|(?i)(?:@|#\s*(pragma|define|include|if|endif|else)|#\[.*?\]|\.\w+|\b[a-zA-Z0-9_]+:)|(?:\{\%|\{\{|--\[)"
         ]
         self.attributePatterns = [
-            r"\b[A-Za-z0-9_-]+\s*=\s*[^\n]*|\b[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+\b|\b(href|src|id|style|alt|title|name|value|type)\b"
+            r"\b[A-Za-z0-9_-]+(?=\s*=)|\b[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+\b|\b(href|src|id|style|alt|title|name|value|type)\b"
         ]
         self.callablePatterns = [
             r"\b[A-Za-z_][A-Za-z0-9_]*(?=\s*\()|\b[A-Za-z_][A-Za-z0-9_]*(?=\s*\.\s*[A-Za-z_][A-Za-z0-9_]*\s*\()"
@@ -100,11 +100,11 @@ class SyntaxParser(QSyntaxHighlighter):
             "default": ("#ccc", False),  # Plain text, variables - user data
             "separator": ("#ccc", True),  # Separators - structural element
             "operator": ("#f6c", True),  # Operators - structural element
-            "section": ("#6cf", True),  # Tags, annotations - structural element
-            "attribute": ("#8c0", False),  # Keys, properties - user data
-            "callable": ("#f0a", False),  # Functions, methods - user data
-            "keyword": ("#08c", True),  # Keywords - structural element
-            "datatype": ("#80c", True),  # Datatypes - structural element
+            "section": ("#99f", True),  # Tags, annotations - structural element
+            "attribute": ("#af0", False),  # Keys, properties - user data
+            "callable": ("#f55", False),  # Functions, methods - user data
+            "keyword": ("#0af", True),  # Keywords - structural element
+            "datatype": ("#a0f", True),  # Datatypes - structural element
             "literal": ("#fc6", False),  # Strings, numbers, constants - user data
             "comment": ("#096", False),  # Documentation - user data
         }

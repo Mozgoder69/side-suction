@@ -3,15 +3,12 @@
 import asyncio
 import sys
 
-from logic.browser_manager import BrowserManager
-from logic.content_manager import ContentManager
-from logic.progress_manager import progress
 from logic.selection_manager import SelectionManager
+from logic.status_manager import progress, report_config, report_result
 from PySide6.QtWidgets import QApplication, QWidget
 from qasync import QEventLoop
 from ui.ui_builder import UIBuilder
 from ui.ui_handler import UIHandler
-from utils.report import report_config, report_result
 
 
 class SideSuction(QWidget, UIBuilder, UIHandler):
@@ -28,8 +25,6 @@ class SideSuction(QWidget, UIBuilder, UIHandler):
         self.selectedFileIndexes = {}
         self.init_ui_builder()
         progress.set_progress_bar(self.progressBar)
-        self.browser_manager = BrowserManager()
-        self.content_manager = ContentManager()
         self.selection_manager = SelectionManager()
 
         self.init_ui_handler()
@@ -65,6 +60,13 @@ class SideSuction(QWidget, UIBuilder, UIHandler):
 
     def setHighlightColor(self, color):
         self.contentEditor.setStyleSheet(f"border-color: {color.value};")
+
+    def closeEvent(self, event):
+        # перед закрытием окна — закрываем GitHub-сессию
+        if hasattr(self, "projectSrc") and hasattr(self.projectSrc, "close"):
+            # schedule close, т.к. здесь нельзя await
+            asyncio.get_event_loop().create_task(self.projectSrc.close())
+        super().closeEvent(event)
 
 
 if __name__ == "__main__":
