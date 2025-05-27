@@ -1,7 +1,9 @@
 # .side_suction/config/settings.py
 
+import os
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
@@ -19,7 +21,14 @@ class Settings(BaseSettings):
     stylesheetPath: Path = Path(__file__).parent / "styles.qss"
     maxFileSize: int = 33554433  # (2 << (3 << 3)) + 1 | (1 << 25) + 1 | 2**25 + 1 |
 
-    github_token: str | None = None
+    GITHUB_TOKEN: str = Field(
+        ..., description="GitHub Personal Access Token", env="GITHUB_TOKEN"
+    )
+
+    class Config:
+        # указываем, что все переменные берутся из этого .env
+        env_file = os.path.join(os.path.dirname(__file__), ".env")
+        env_file_encoding = "utf-8"
 
 
 # Initialize settings

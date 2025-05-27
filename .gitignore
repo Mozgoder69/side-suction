@@ -3,3 +3,13 @@ __pycache__/
 *.pyo
 *.pyd
 *.qml
+
+# ─── Секреты, конфиги, виртуалки и окружения ──────────────────────────────────
+conda-meta/
+.conda*/
+venv/
+**/.env
+*.env
+.env
+.envs/
+config.json
