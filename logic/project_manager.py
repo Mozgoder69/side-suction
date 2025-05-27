@@ -1,21 +1,21 @@
 # .side_suction/logic/project_manager.py
 
-from pathlib import Path
-
-from logic.progress_manager import progress
-from PySide6.QtCore import Qt
 import re
 from pathlib import Path
 
 import aiofiles
 from config.settings import settings
-from logic.progress_manager import progress
-from utils.report import report_result
+from logic.project_source import LocalSource
+from logic.status_manager import progress, report_result
+from PySide6.QtCore import Qt
 
 
 class ProjectManager:
-    def __init__(self):
-        self.projectPath = None
+    def __init__(self, source):
+        self.source = source
+        self.projectPath = (
+            Path(str(source)) if isinstance(source, LocalSource) else None
+        )
         self.filteredDirs = set()
         self.filteredExts = set()
         self.filteredFiles = []
@@ -28,15 +28,18 @@ class ProjectManager:
         self.filteredFiles.clear()
         self.filteredExts.clear()
         self.filteredDirs.clear()
-        files = list(self.projectPath.rglob("*"))
-        result = []
-        async for file in progress(files, "Scanning Project"):
-            if file.is_file():
-                rel_path = file.relative_to(self.projectPath)
-                result.append((rel_path, file))
-                self.filteredExts.add(file.suffix)
-                self.filteredDirs.update(rel_path.parents)
-        self.filteredFiles = result
+
+        rel_paths = await self.source.list_files()
+        async for rel in progress(rel_paths, "Scanning Project"):
+            # для локального source.read_file понадобится full_path, но фильтровать будем по rel
+            full = None
+            if hasattr(self.source, "root"):
+                full = Path(self.source.root) / rel
+
+            self.filteredFiles.append((rel, full))
+            self.filteredExts.add(rel.suffix)
+            self.filteredDirs.update(rel.parents)
+
         self.filteredDirs.discard(Path("."))
         return {
             "filteredFiles": self.filteredFiles,
@@ -45,13 +48,16 @@ class ProjectManager:
         }
 
     async def get_filtered_files(self, selectedExts, selectedDirs):
-        excluded = {self.projectPath / d for d in selectedDirs}
         filtered = []
         async for rel, full in progress(self.filteredFiles, "Filtering Files"):
-            if not any(p in excluded for p in full.parents) and (
-                not selectedExts or full.suffix in selectedExts
-            ):
-                filtered.append((rel, full))
+            # 1) исключаем по директориям
+            if selectedDirs and any(parent in selectedDirs for parent in rel.parents):
+                continue
+            # 2) фильтруем по расширениям
+            if selectedExts and rel.suffix not in selectedExts:
+                continue
+
+            filtered.append((rel, full))
         return filtered
 
     async def get_filtered_dirs(self, selectedDirs):
@@ -69,19 +75,23 @@ class ProjectManager:
             item.data(Qt.UserRole + 1): i + 1 for i, item in enumerate(selectedFiles)
         }
 
-    async def extract_content(self, project_path, selected_items):
-        content = []
-        project_path = Path(project_path)
-        async for item in progress(selected_items, "Extracting Content"):
-            rel_path = Path(item)
-            abs_path = project_path / rel_path
-            if abs_path.stat().st_size > settings.maxFileSize:
+    async def extract_content(self, selected_items):
+        content_pieces = []
+        async for rel_path, _ in progress(selected_items, "Extracting Content"):
+            try:
+                text = await self.source.read_file(rel_path)
+            except Exception as e:
+                report_result(f"Cannot read {rel_path}: {e}", "Read Error", 1)
+                continue
+
+            # пусть размер считается уже по строке
+            if len(text.encode("utf-8")) > settings.maxFileSize:
                 report_result(f"File {rel_path} is too large", "File Size Limit", 1)
                 continue
 
-            async with aiofiles.open(abs_path, encoding="utf-8", errors="replace") as f:
-                content.append(f"```{rel_path}\n{await f.read()}\n```")
-        return "\n".join(content)
+            content_pieces.append(f"```{rel_path}\n{text}\n```")
+
+        return "\n".join(content_pieces)
 
     def minify_web_tags(self, content: str) -> str:
         tag_pattern = re.compile(r"<(/?[A-Za-z][A-Za-z0-9\-]*)(.*?)(/?)>", re.DOTALL)

@@ -102,7 +102,9 @@ class GitHubSource(IProjectSource):
         ]
 
     async def read_file(self, rel_path: Path) -> str:
-        url = f"{self.raw_base}{rel_path}"
+        # GitHub raw URLs всегда используют прямые слэши
+        rel = rel_path.as_posix() if isinstance(rel_path, Path) else str(rel_path)
+        url = f"{self.raw_base}{rel}"
         async with self.session.get(url) as resp:
             resp.raise_for_status()
             return await resp.text()

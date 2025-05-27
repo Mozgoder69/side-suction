@@ -53,7 +53,7 @@ loop = asyncio.get_event_loop()
 loop.set_exception_handler(handle_error)
 
 
-class ProgressManager(QObject):
+class StatusManager(QObject):
     updated = Signal(int, str)
 
     def __init__(self, min_interval=0.2, enum_mult=10):
@@ -159,4 +159,4 @@ class ProgressManager(QObject):
         return self.track(iterable, label)
 
 
-progress = ProgressManager()
+progress = StatusManager()
